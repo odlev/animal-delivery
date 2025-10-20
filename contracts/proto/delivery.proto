@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package proto.v1;
+
+option go_package = "github.com/odlev/animal-delivery/contracts/gen/go/animaldelivery;animaldelivery";
+
+message StartDeliveryRequest {
+    string order_id = 2;
+    string description = 3;
+    string delivery_address = 4; // адрес доставки 
+    string pickup_address = 5; // адрес полученияж
+}
+
+message StartDeliveryResponse {
+    string delivery_id = 1;
+}
+
+enum DeliveryStatus {
+    DELIVERY_STATUS_UNSPECIFIED = 0;
+    DELIVERY_STATUS_CREATED = 1;
+    DELIVERY_STATUS_IN_PROGRESS = 2;
+    DELIVERY_STATUS_COMPLETED = 3;
+    DELIVERY_STATUS_CANCELED = 4;
+}
+
+message GetDeliveryStatusRequest {
+    string delivery_id = 1;
+}
+
+message GetDeliveryStatusResponse {
+    string delivery_id = 1;
+    DeliveryStatus status = 2; // "created", "in_progress", "completed", "canceled"
+    string order_id = 3;
+    string delivery_address = 4;
+    string pickup_address = 5;
+    string cancel_reason = 6;
+    string updated_at = 7;
+}
+
+message CancelDeliveryRequest {
+    string delivery_id = 1;
+    string reason = 2;
+}
+
+message CancelDeliveryResponse {
+    bool ok = 1;
+}
+
+service DeliveryService {
+    rpc StartDelivery(StartDeliveryRequest) returns (StartDeliveryResponse);
+    rpc GetDeliveryStatus(GetDeliveryStatusRequest) returns (GetDeliveryStatusResponse);
+    rpc CancelDelivery(CancelDeliveryRequest) returns (CancelDeliveryResponse);
+}

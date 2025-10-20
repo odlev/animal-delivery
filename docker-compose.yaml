@@ -1,0 +1,51 @@
+services:
+  # api-gateway:
+  #   build:
+  #     context: .
+  #     dockerfile: ./
+  #   depends_on:
+  #     orders:
+  #       condition: service_started
+  #     delivery:
+  #       condition: service_started
+  #   ports:
+  #     - "8080:8080"
+  #   env_file:
+  #     - ./api-gateway/.env
+  #   networks:
+  #     - backend
+
+  orders:
+    build:
+      context: .
+      dockerfile: ./orders/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_started
+    ports:
+      - "50051:50051"
+    env_file:
+      - orders/.env
+    networks:
+      - backend
+    restart: unless-stopped
+   
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: orders_user
+      POSTGRES_PASSWORD: orders_pass
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    restart: unless-stopped
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  postgres-data:
+

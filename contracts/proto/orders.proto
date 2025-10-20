@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package proto.v1;
+
+option go_package = "github.com/odlev/animal-delivery/contracts/gen/go/animaldelivery;animaldelivery";
+
+message CreateOrderRequest {
+    string customer_id = 1;
+    string animal_type = 2;
+    int32 animal_age = 3;
+}
+
+message CreateOrderResponse {
+    string order_id = 1;
+}
+
+enum OrderStatus {
+    ORDER_STATUS_UNSPECIFIED = 0;
+    ORDER_STATUS_CREATED = 1;
+    ORDER_STATUS_IN_PROGRESS = 2;
+    ORDER_STATUS_COMPLETED = 3;
+    ORDER_STATUS_DELETED = 4;
+}
+
+message GetOrderRequest {
+    string order_id = 1;
+}
+
+message GetOrderResponse {
+    string order_id = 1;
+    OrderStatus status = 2; // created, "in_progress", "completed" "deleted"
+    string customer_id = 3;
+    string animal_type = 4;
+    int32 animal_age = 5;
+    optional string delete_reason = 6;
+    string updated_at = 7;
+}
+
+message DeleteOrderRequest {
+    string order_id = 1;
+    string reason = 2;
+}
+message DeleteOrderResponse {
+    bool ok = 1; 
+}
+
+service OrderService {
+    rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);
+    rpc GetOrder (GetOrderRequest) returns (GetOrderResponse);
+    rpc DeleteOrder(DeleteOrderRequest) returns (DeleteOrderResponse);
+}

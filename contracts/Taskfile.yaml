@@ -1,0 +1,15 @@
+version: '3'
+
+vars:
+  PWSH: pwsh -NoProfile -Command
+
+tasks:
+  newgen:
+    desc: remove generated stubs and generate new
+    cmds:
+      - "{{.PWSH}} \"if (Test-Path 'gen') { Remove-Item -Recurse -Force 'gen' }\""
+      - buf generate
+    sources:
+      - proto/**/*.proto
+    generates:
+      - gen/**

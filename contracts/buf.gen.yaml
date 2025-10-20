@@ -1,0 +1,10 @@
+version: v1
+plugins:
+  - plugin: go
+    out: gen/go
+    opt:
+      - module=github.com/odlev/animal-delivery/contracts/gen/go
+  - plugin: go-grpc
+    out: gen/go
+    opt: 
+      - module=github.com/odlev/animal-delivery/contracts/gen/go
