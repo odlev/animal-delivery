@@ -34,8 +34,10 @@ func (u *UseCase) CreateOrder(ctx context.Context, order domain.Order) (uuid.UUI
 	id := uuid.New()
 	order.OrderID = id
 	if err := u.OrdersManager.CreateOrder(ctx, order); err != nil {
+		OrdersCreatedCounter.WithLabelValues("error", "ru").Inc()
 		return uuid.Nil, fmt.Errorf("%s: failed to create order: %s", op, err)
 	}
+	OrdersCreatedCounter.WithLabelValues("success", "ru").Inc()
 
 	return id, nil
 }
@@ -76,13 +78,3 @@ func (u *UseCase) DeleteOrder(ctx context.Context, strUUID string) error {
 
 	return nil
 }
-
-/* func validateUUID(ids ...string) error {
-	for _, id := range ids {
-		if err := uuid.Validate(id); err != nil {
-			return ErrInvalidUUID
-		}
-	}
-	return nil
-}
- */

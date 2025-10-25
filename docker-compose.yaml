@@ -2,11 +2,9 @@ services:
   # api-gateway:
   #   build:
   #     context: .
-  #     dockerfile: ./
+  #     dockerfile: ./api-gateway/Dockerfile
   #   depends_on:
   #     orders:
-  #       condition: service_started
-  #     delivery:
   #       condition: service_started
   #   ports:
   #     - "8080:8080"
@@ -15,32 +13,166 @@ services:
   #   networks:
   #     - backend
 
-  orders:
-    build:
-      context: .
-      dockerfile: ./orders/Dockerfile
-    depends_on:
-      postgres:
-        condition: service_started
-    ports:
-      - "50051:50051"
-    env_file:
-      - orders/.env
-    networks:
-      - backend
-    restart: unless-stopped
-   
+  # orders:
+  #   build:
+  #     context: .
+  #     dockerfile: ./orders/Dockerfile
+  #   depends_on:
+  #     postgres:
+  #       condition: service_started
+  #   ports:
+  #     - "50051:50051"
+  #   env_file:
+  #     - ./orders/.env
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+
   postgres:
     image: postgres
+    container_name: postgres
     environment:
       POSTGRES_DB: orders
       POSTGRES_USER: orders_user
       POSTGRES_PASSWORD: orders_pass
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     networks:
       - backend
     restart: unless-stopped
+  
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: "postgres://orders_user:orders_pass@postgres:5432/orders?sslmode=disable"
+    ports:
+      - "9187:9187"
+    depends_on:
+      - postgres
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./lib/configs/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheusdata:/prometheus
+    ports:
+      - "9090:9090"
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    ports:
+    - "9093:9093"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    volumes:
+      - ./lib/configs/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafanadata:/var/lib/grafana
+    
+  jaeger:
+    image: jaegertracing/all-in-one:1.56
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+      - "6831:6831/udp"
+      - "14268:14268"
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.8
+    container_name: clickhouse
+    ports:
+      - "9000:9000"   # native protocol (Go драйвер)
+      - "8123:8123"   # HTTP API
+    volumes:
+    - clickhouse-data:/var/lib/clickhouse
+      
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.7.1
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_INIT_lINIT: 3
+      ZOOKEEPER_SYNC_LIMIT: 2
+    networks:
+      - backend
+
+  kafka1:
+    container_name: kafka1
+    image: confluentinc/cp-server:7.7.1
+    hostname: kafka1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9091:9091"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:29091,PLAINTEXT_HOST://localhost:9091
+    networks:
+      - backend
+
+  kafka2:
+    container_name: kafka2
+    image: confluentinc/cp-server:7.7.1
+    hostname: kafka2
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:29092,PLAINTEXT_HOST://localhost:9092
+    networks:
+      - backend
+
+  kafka3:
+    container_name: kafka3
+    image: confluentinc/cp-server:7.7.1
+    hostname: kafka3
+    depends_on:
+      - zookeeper
+    ports:
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:29093,PLAINTEXT_HOST://localhost:9093
+    networks:
+      - backend
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 9020:8080
+    environment:
+      AUTH_TYPE: DISABLED
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:29091,kafka2:29092,kafka3:29093
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    networks:
+      - backend
 
 networks:
   backend:
@@ -48,4 +180,6 @@ networks:
 
 volumes:
   postgres-data:
-
+  clickhouse-data:
+  grafanadata:
+  prometheusdata:

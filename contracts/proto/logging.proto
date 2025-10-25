@@ -1,0 +1,14 @@
+syntax = "proto3";
+package logging;
+
+option go_package = "github.com/odlev/animal-delivery/contracts/gen/go/loggingpb;loggingpb";
+
+message LogEvent {
+    string level = 1;
+    string message = 2;
+    string service = 3;
+    string trace_id = 4;
+    string span_id = 5;
+    int64 timestamp = 6;
+    map<string, string> fields = 7;
+}

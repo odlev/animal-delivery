@@ -40,13 +40,13 @@ func New(ctx context.Context, cfg *config.Config, dsn string, log *logrus.Logger
 }
 
 func (a *App) Run() error {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", a.cfg.GRPC.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", a.cfg.GRPC.Host ,a.cfg.GRPC.Port))
 	if err != nil {
 		return err
 	}
 	defer lis.Close()
 
-	a.log.Infof("orders gRPC listening on %s", lis.Addr())
+	a.log.Infof("orders gRPC server listening on %s", lis.Addr())
 	return a.server.Serve(lis)
 }
 

@@ -3,11 +3,11 @@ package transport
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	pb "github.com/odlev/animal-delivery/contracts/gen/go/animaldelivery"
 	"github.com/odlev/animal-delivery/orders/internal/domain"
-	"github.com/odlev/animal-delivery/orders/internal/usecase"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -67,12 +67,12 @@ func (s *server) GetOrder(ctx context.Context, req *pb.GetOrderRequest) (*pb.Get
 	}
 
 	return &pb.GetOrderResponse{
-		OrderId: order.OrderID.String(),
-		Status: toPbStatus(order.Status),
+		OrderId:    order.OrderID.String(),
+		Status:     toPbStatus(order.Status),
 		CustomerId: order.CustomerID.String(),
 		AnimalType: order.AnimalType,
-		AnimalAge: order.AnimalAge,
-		UpdatedAt: order.UpdatedAt.String(),
+		AnimalAge:  order.AnimalAge,
+		UpdatedAt:  order.UpdatedAt.Format(time.RFC3339),
 	}, nil
 }
 
@@ -85,7 +85,7 @@ func (s *server) DeleteOrder(ctx context.Context, req *pb.DeleteOrderRequest) (*
 	return &pb.DeleteOrderResponse{Ok: true}, nil
 }
 
-func toDomainStatus(s pb.OrderStatus) (domain.Status, error) {
+/* func toDomainStatus(s pb.OrderStatus) (domain.Status, error) {
 	// выбор между мапой и свитчей пал на свитч. скорость одинакова, а типов не слишком много для мапы
 	switch s {
 	case pb.OrderStatus_ORDER_STATUS_CREATED:
@@ -99,7 +99,7 @@ func toDomainStatus(s pb.OrderStatus) (domain.Status, error) {
 	default:
 		return "", usecase.ErrInvalidStatus
 	}
-}
+} */
 
 func toPbStatus(s domain.Status) pb.OrderStatus {
 	switch s {

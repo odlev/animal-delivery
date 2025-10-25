@@ -1,3 +1,26 @@
+что внедрить
+oidc - https://github.com/coreos/go-oidc
+rbac - https://github.com/casbin/casbin
+кафка
+редис
+кликхаус
+метрики прометеус и графана и трассировка жаегер (опентелеметри)
+кейклок подрубить (рассмотреть это)
+
+
+Project includes:
+    misroservices: 
+        - api-gateway
+        - orders
+        - logging 
+- REST
+- GRPC, Protobuf (separate go module for contracts)
+- Kafka cluster
+- Prometheus, Grafana
+- Jaeger, OpenTelemetry
+- Docker, Docker-compose
+- go work))
+
 # Структура проекта:
 
 animal-delivery/
@@ -19,7 +42,6 @@ animal-delivery/
 │  │          └─ orders_grpc.pb.go
 │  └─ .task/…                     # служебные файлы Task
 │
-│
 ├─ api-gateway/
 │  ├─ go.mod (module github.com/odlev/animal-delivery/api-gateway)
 │  ├─ cmd/gateway/main.go          # точка входа, wiring зависимостей
@@ -33,8 +55,18 @@ animal-delivery/
 │  ├─ deploy/                      # Dockerfile, Helm, k8s
 │  └─ test/                        # e2e/contract тесты
 │
+├─ orders/
+│  ├─ go.mod (module github.com/odlev/animal-delivery/processor)
+│  ├─ cmd/processor/main.go        # запуск gRPC сервера, DI
+│  ├─ internal/server/grpc.go      # регистрация сервисов, interceptors
+│  ├─ internal/service/            # доменные use-cases (доставка, заказы)
+│  ├─ internal/repo/               # БД, очереди, внешние ресурсы
+│  ├─ internal/worker/             # фоновые джобы, обработчики событий
+│  ├─ configs/                     # конфигурация сервиса
+│  ├─ deploy/                      # Dockerfile, Helm, k8s
+│  └─ test/                        # unit/integration тесты
 │
-├─ processor/
+─ delivery/
 │  ├─ go.mod (module github.com/odlev/animal-delivery/processor)
 │  ├─ cmd/processor/main.go        # запуск gRPC сервера, DI
 │  ├─ internal/server/grpc.go      # регистрация сервисов, interceptors

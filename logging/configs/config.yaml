@@ -1,0 +1,10 @@
+kafka:
+  broker_adresses:
+    - localhost:9091
+    - localhost:9092
+    - localhost:9093
+  consumer_group: logging-group
+  topic: log
+  num_consumers: 3
+logging:
+  log_batch_size: 1000

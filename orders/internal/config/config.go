@@ -13,6 +13,7 @@ type Config struct {
 
 type GRPC struct {
 	Port int `mapstrucrute:"port"`
+	Host string `mapstructure:"host"`
 }
 
 func Load(path string) (*Config, error) {

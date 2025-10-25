@@ -13,9 +13,9 @@ func SetupLogrus() *logrus.Logger {
 	l.SetOutput(os.Stdout)
 	l.SetLevel(logrus.InfoLevel)
 	l.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp: true,
+		FullTimestamp:   true,
 		TimestampFormat: time.RFC3339,
-		PadLevelText: true,
+		PadLevelText:    true,
 	})
 	return l
 }

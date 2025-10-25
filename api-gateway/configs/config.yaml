@@ -1,0 +1,8 @@
+http_server:
+  port: 8080
+  host: "0.0.0.0"
+clients:
+  orders:
+    grpc_port: 50051
+    grpc_host: "0.0.0.0"
+

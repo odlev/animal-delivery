@@ -20,6 +20,6 @@ RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/bin/orders ./orders
 COPY --from=builder /app/orders/configs ./configs
 COPY --from=builder /app/orders/migrations ./migrations
-COPY .env .env
+COPY orders/.env .env
 EXPOSE 50051
 ENTRYPOINT [ "./orders" ]

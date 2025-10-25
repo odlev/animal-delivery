@@ -25,7 +25,7 @@ type Order struct {
 
 const (
 	StatusCreated    Status = "created"
-	StatusInProgress Status = "in progress"
+	StatusInProgress Status = "in_progress"
 	StatusCompleted Status = "completed"
 	StatusDeleted Status = "deleted"
 )
